@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.uitstu.party.R;
+import com.uitstu.party.models.Conversation;
 
 /**
  * Created by duy tung dao on 12/7/2016.
@@ -22,12 +23,13 @@ public class ChatItem extends LinearLayout{
     private TextView groupName;             // hiển thị tên group
     private TextView lastMessage;           // hiển thị tin nhắn cuối cùng
     private TextView interactionTime;       // thời gian tương tác cuối cùng
-
-    private Context thisContext;
     private Bitmap bmpAvatar;
-    public ChatItem(Context context, Bitmap avatar, String groupname,
-                    String lastmessage, String lastinteration, int parentWidth) {
+    private Context thisContext;
+
+    public Conversation conversation;
+    public ChatItem(Context context, Bitmap avatar,Conversation con, int parentWidth) {
         super(context);
+        this.conversation = con;
         thisContext = context;
 
         bmpAvatar = avatar;
@@ -48,14 +50,14 @@ public class ChatItem extends LinearLayout{
         groupName = new TextView(thisContext);
         groupName = new TextView(thisContext,null, R.style.BoldFont);
         groupName.setGravity(Gravity.BOTTOM);
-        groupName.setText(groupname);
+        groupName.setText(conversation.getPartyName());
         groupName.setLayoutParams(contentLayoutParams);
         //tin nhắn cuối cùng
         contentLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT,1.0f);
         lastMessage = new TextView(thisContext,null, R.style.FadedFont);
         lastMessage.setGravity(Gravity.TOP);
-        lastMessage.setText(lastmessage);
+        lastMessage.setText(conversation.getLastMessage());
         lastMessage.setLayoutParams(contentLayoutParams);
         // content
         contentLayoutParams = new LayoutParams(4*parentWidth/6,
@@ -72,22 +74,47 @@ public class ChatItem extends LinearLayout{
                 LayoutParams.MATCH_PARENT);
         interactionTime = new TextView(thisContext);
         interactionTime.setGravity(Gravity.TOP);
-        interactionTime.setText(lastinteration);
+        interactionTime.setText(conversation.getLastUpdatedTime()+"");
         interactionTime.setLayoutParams(contentLayoutParams);
         this.addView(interactionTime);
 
     }
-/*
-    @Override
-    public void setOnClickListener(OnClickListener l) {
-        super.setOnClickListener(l);
-        FragmentChattingDetail fragmentChattingDetail = new FragmentChattingDetail();
-        // Insert the fragment by replacing any existing fragment
-        containerFragment.getFragmentManager().beginTransaction()
-                .replace(R.id.fragment_chatting_list_layout,fragmentChattingDetail)
-                .commit();
+
+    public TextView getGroupName() {
+        return groupName;
     }
-*/
+
+    public void setGroupName(TextView groupName) {
+        this.groupName = groupName;
+    }
+
+    public TextView getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(TextView lastMessage) {
+        this.lastMessage = lastMessage;
+    }
+
+    public TextView getInteractionTime() {
+        return interactionTime;
+    }
+
+    public void setInteractionTime(TextView interactionTime) {
+        this.interactionTime = interactionTime;
+    }
+
+    /*
+        @Override
+        public void setOnClickListener(OnClickListener l) {
+            super.setOnClickListener(l);
+            FragmentChattingDetail fragmentChattingDetail = new FragmentChattingDetail();
+            // Insert the fragment by replacing any existing fragment
+            containerFragment.getFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_chatting_list_layout,fragmentChattingDetail)
+                    .commit();
+        }
+    */
     // draw a bottom line
     @Override
     public void onDraw(Canvas canvas){

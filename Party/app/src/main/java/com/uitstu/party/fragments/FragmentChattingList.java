@@ -14,8 +14,10 @@ import android.widget.LinearLayout;
 import com.google.firebase.database.DatabaseReference;
 import com.uitstu.party.AsyncTasks.AsyncLoadChatItem;
 import com.uitstu.party.R;
+import com.uitstu.party.models.Conversation;
 import com.uitstu.party.supports.ChatItem;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -27,8 +29,7 @@ public class FragmentChattingList extends Fragment {
     private FragmentChatting parentFragment;
 
     private AsyncLoadChatItem asyncLoadChatItem;
-    private DatabaseReference currentuserConversations;
-    private Set<String> setOfConversationIDs;
+
     // Khởi tạo asynctask
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -61,16 +62,16 @@ public class FragmentChattingList extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState){
         super.onViewCreated(view,savedInstanceState);
     }
-    public void loadChatItemsToLayout(Set<String> conversationsSet){
+    public void loadChatItemsToLayout(Set<Conversation> conversationsSet){
         // List các group chat ra đây
         if(conversationsSet!=null){
             // clear hết view trong đó
             linearLayout.removeAllViews();
             // với mõi chuỗi i trong set thêm 1 chat item
-            for (String i: conversationsSet) {
+            for (Conversation i: conversationsSet) {
+
                 Bitmap b = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-                ChatItem chatItem = new ChatItem(FragmentChattingList.this.getContext(),b,i,
-                        "last message","TIME",linearLayout.getWidth());
+                ChatItem chatItem = new ChatItem(FragmentChattingList.this.getContext(),b, i,linearLayout.getWidth());
                 chatItem.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
