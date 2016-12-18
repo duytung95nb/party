@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/fragment_chatting_detail_layout"
     android:background="#00f"
     android:layout_width="match_parent"
@@ -16,7 +17,8 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/topZeroHeightSpace"
         android:layout_above="@+id/chatToolsBar"
-        android:background="@android:color/white">
+        android:background="@android:color/white"
+        android:paddingBottom="@dimen/place_autocomplete_button_padding">
         <LinearLayout
             android:id="@+id/chatContentLayoutContainer"
             android:layout_width="match_parent"
@@ -43,6 +45,15 @@
             android:layout_weight="1"
             android:text="Send"/>
     </LinearLayout>
+    <com.getbase.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#CCFF0000"
+        android:layout_alignParentRight="true"
+        android:layout_above="@+id/chatToolsBar"
+        android:layout_margin="@dimen/fab_labels_margin"
+        app:fab_icon="@drawable/icon_out"/>
 
 
 </RelativeLayout>

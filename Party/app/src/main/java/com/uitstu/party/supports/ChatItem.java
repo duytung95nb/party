@@ -25,11 +25,8 @@ public class ChatItem extends LinearLayout{
     private TextView interactionTime;       // thời gian tương tác cuối cùng
     private Bitmap bmpAvatar;
     private Context thisContext;
-
-    public Conversation conversation;
-    public ChatItem(Context context, Bitmap avatar,Conversation con, int parentWidth) {
+    public ChatItem(Context context, Bitmap avatar, int parentWidth) {
         super(context);
-        this.conversation = con;
         thisContext = context;
 
         bmpAvatar = avatar;
@@ -50,14 +47,14 @@ public class ChatItem extends LinearLayout{
         groupName = new TextView(thisContext);
         groupName = new TextView(thisContext,null, R.style.BoldFont);
         groupName.setGravity(Gravity.BOTTOM);
-        groupName.setText(conversation.getPartyName());
+        groupName.setText("Party Name...");
         groupName.setLayoutParams(contentLayoutParams);
         //tin nhắn cuối cùng
         contentLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT,1.0f);
         lastMessage = new TextView(thisContext,null, R.style.FadedFont);
         lastMessage.setGravity(Gravity.TOP);
-        lastMessage.setText(conversation.getLastMessage());
+        lastMessage.setText("Last Message...");
         lastMessage.setLayoutParams(contentLayoutParams);
         // content
         contentLayoutParams = new LayoutParams(4*parentWidth/6,
@@ -74,47 +71,16 @@ public class ChatItem extends LinearLayout{
                 LayoutParams.MATCH_PARENT);
         interactionTime = new TextView(thisContext);
         interactionTime.setGravity(Gravity.TOP);
-        interactionTime.setText(conversation.getLastUpdatedTime()+"");
+        interactionTime.setText("Last Updated...");
         interactionTime.setLayoutParams(contentLayoutParams);
         this.addView(interactionTime);
 
     }
-
-    public TextView getGroupName() {
-        return groupName;
+    public void RefreshContent(String groupname, String lastmessage, String interationtime){
+        groupName.setText(groupname);
+        lastMessage.setText(lastmessage);
+        interactionTime.setText(interationtime);
     }
-
-    public void setGroupName(TextView groupName) {
-        this.groupName = groupName;
-    }
-
-    public TextView getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(TextView lastMessage) {
-        this.lastMessage = lastMessage;
-    }
-
-    public TextView getInteractionTime() {
-        return interactionTime;
-    }
-
-    public void setInteractionTime(TextView interactionTime) {
-        this.interactionTime = interactionTime;
-    }
-
-    /*
-        @Override
-        public void setOnClickListener(OnClickListener l) {
-            super.setOnClickListener(l);
-            FragmentChattingDetail fragmentChattingDetail = new FragmentChattingDetail();
-            // Insert the fragment by replacing any existing fragment
-            containerFragment.getFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_chatting_list_layout,fragmentChattingDetail)
-                    .commit();
-        }
-    */
     // draw a bottom line
     @Override
     public void onDraw(Canvas canvas){

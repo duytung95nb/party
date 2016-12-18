@@ -9,20 +9,28 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.uitstu.party.models.Message;
+
 /**
  * Created by duy tung dao on 12/14/2016.
  */
 
 public class ChatMessage extends LinearLayout {
+    private String currentUserID;
     private RoundedImageView userAvatar;
     private FrameLayout chatContentContainer;
     private TextView chatContent;
+    private Message message;
+
     public ChatMessage(Context context) {
         super(context);
 
     }
-    public ChatMessage(Context context,Bitmap avatar,String content, boolean isCurrentUser) {
+    public ChatMessage(Context context,Bitmap avatar,Message mess) {
         super(context);
+        this.message = mess;
+        this.currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         LayoutParams thisParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
         this.setLayoutParams(thisParams);
@@ -36,7 +44,7 @@ public class ChatMessage extends LinearLayout {
 
 
         chatContent = new TextView(context);
-        chatContent.setText(content);
+        chatContent.setText(message.getContent());
         chatContent.setMaxWidth(1000);
         chatContent.setLayoutParams(params);
 
@@ -47,7 +55,7 @@ public class ChatMessage extends LinearLayout {
         chatContentContainer.addView(chatContent);
         chatContentContainer.setLayoutParams(params);
         // nếu là user hiện tại: thêm content -> avatar, đặt bên phải
-        if(isCurrentUser){
+        if(message.getUser_id().equals(currentUserID)){
             this.setGravity(Gravity.BOTTOM|Gravity.RIGHT);
             chatContentContainer.setBackgroundColor(Color.BLUE);
             this.addView(chatContentContainer);

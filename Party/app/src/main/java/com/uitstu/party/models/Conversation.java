@@ -1,8 +1,5 @@
 package com.uitstu.party.models;
 
-import android.util.Log;
-
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -11,7 +8,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.uitstu.party.supports.ChatItem;
 
 import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
 
 /**
  * Created by duy tung dao on 12/16/2016.
@@ -26,9 +22,11 @@ public class Conversation {
     private ArrayList<String> people;           // id người dùng
 
     private DatabaseReference conversation;
-    private final Semaphore semaphore = new Semaphore(0);
-    public Conversation(String conversationID) {
+    // gắn vào 1 chat item
+    private ChatItem chatItem;
+    public Conversation(String conversationID,ChatItem chat) {
         this.conversationID = conversationID;
+        this.chatItem = chat;
         conversation = FirebaseDatabase.getInstance().getReference()
                 .child("conversations")         // lấy danh sách conversations từ node conversation tổng
                 .child(this.conversationID);    // lấy ra conversation cụ thể
@@ -36,12 +34,16 @@ public class Conversation {
         this.lastMessage = conversation.child("lastMessage").getKey().toString();
         this.lastUpdatedTime = conversation.child("lastUpdatedTime").getKey().toString();
         conversation.addValueEventListener(new ValueEventListener() {
+            // update this conversation+ update chat item
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Conversation.this.setPartyName(dataSnapshot.child("partyName").toString());
-                Conversation.this.setLastMessage(dataSnapshot.child("lastMessage").toString());
-                Conversation.this.setLastUpdatedTime(dataSnapshot.child("lastUpdatedTime").toString());
-                semaphore.release();
+                String partyname = dataSnapshot.child("partyName").getValue().toString();
+                String lastmessage = dataSnapshot.child("lastMessage").getValue().toString();
+                String lastupdatedtime = dataSnapshot.child("lastUpdatedTime").getValue().toString();
+                Conversation.this.setPartyName(partyname);
+                Conversation.this.setLastMessage(lastmessage);
+                Conversation.this.setLastUpdatedTime(lastupdatedtime);
+                chatItem.RefreshContent(partyname,lastmessage,lastupdatedtime);
             }
 
             @Override
@@ -49,12 +51,15 @@ public class Conversation {
 
             }
         });
-        try{
-            semaphore.acquire();
-        }catch(InterruptedException e){
-            Log.d("interupt exception: ",e.toString());
-        }
 
+    }
+
+    public String getConversationID() {
+        return conversationID;
+    }
+
+    public void setConversationID(String conversationID) {
+        this.conversationID = conversationID;
     }
 
     public String getLastUpdatedTime() {

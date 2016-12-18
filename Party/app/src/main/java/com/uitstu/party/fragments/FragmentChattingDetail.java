@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +15,21 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
+import com.getbase.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.uitstu.party.R;
+import com.uitstu.party.models.Message;
 import com.uitstu.party.supports.ChatMessage;
+
+import java.sql.Date;
+import java.util.Map;
 
 /**
  * Created by duy tung dao on 12/10/2016.
@@ -27,8 +41,13 @@ public class FragmentChattingDetail extends Fragment {
     private LinearLayout chatToolsBar;
     private EditText edt_input_content;
     private Button btn_send;
+    private FloatingActionButton btn_back;
     private FragmentChatting parentFragment;
     private RelativeLayout fragment_chatting_detail_layout;
+
+    private DatabaseReference currentConversationContent;           // chứa nội dung các conversation
+    private DatabaseReference currentMessages;           // chứa nội dung các message
+    private final String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -38,34 +57,81 @@ public class FragmentChattingDetail extends Fragment {
         chatContentLayoutContainer = (LinearLayout) view.findViewById(R.id.chatContentLayoutContainer);
         chatToolsBar = (LinearLayout)view.findViewById(R.id.chatToolsBar);
         edt_input_content = (EditText) view.findViewById(R.id.edt_input_content);
-        btn_send = (Button) view.findViewById(R.id.btn_send);
-        btn_send.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
 
+        btn_back = (FloatingActionButton) view.findViewById(R.id.btn_back);
+        btn_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(FragmentChattingDetail.this.parentFragment!=null){
+                    parentFragment.switchToNextFragment();
+                    parentFragment.removeDetailFragment(FragmentChattingDetail.this);
+                }
             }
         });
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
-        ChatMessage chatMessage = new ChatMessage(this.getActivity().getApplicationContext(),
-                bitmap,"this is a really test content this is a really test content this is " +
-                "a really test content this is a really test content",
-                false);
-        ChatMessage chatMessage1 = new ChatMessage(this.getActivity().getApplicationContext(),
-                bitmap,"this is a really test content this is a really test content this is " +
-                "a really test content this is a really test content",
-                false);
-        ChatMessage chatMessage2 = new ChatMessage(this.getActivity().getApplicationContext(),
-                bitmap,"this is a really test content this is a really test content this is " +
-                "a really test content this is a really test content",
-                true);
-        ChatMessage chatMessage3 = new ChatMessage(this.getActivity().getApplicationContext(),
-                bitmap,"this is a really test content this is a really test content this is " +
-                "a really test content this is a really test content",
-                false);
-        chatContentLayoutContainer.addView(chatMessage);
-        chatContentLayoutContainer.addView(chatMessage1);
-        chatContentLayoutContainer.addView(chatMessage2);
-        chatContentLayoutContainer.addView(chatMessage3);
+        btn_send = (Button) view.findViewById(R.id.btn_send);
+        chatContentScrollView.fullScroll(View.FOCUS_DOWN);
+        // lấy node conversation (có nội dung)
+        if(parentFragment!=null){
+            currentConversationContent = FirebaseDatabase.getInstance().getReference()
+                    .child("conversations")
+                    .child(parentFragment.getRecentConversationId());
+            currentMessages = currentConversationContent.child("messages");
+            // load lần đầu tiên
+            // thêm tin nhắn
+            currentMessages.orderByChild("createdTime").addChildEventListener(new ChildEventListener() {
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    String mContent = dataSnapshot.child("content").getValue().toString();
+                    long mCreatedTime = Long.parseLong(dataSnapshot.child("createdTime").getValue().toString());
+                    String mUserID = dataSnapshot.child("user_id").getValue().toString();
+                    Message m = new Message(mContent,mCreatedTime,mUserID);
+                    ChatMessage chatMessage = new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
+                            bitmap,m);
+                    chatContentLayoutContainer.addView(chatMessage);
+                    chatContentScrollView.fullScroll(View.FOCUS_DOWN);
+                }
+
+
+
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            // gửi tin nhắn
+            btn_send.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    String messageContent = FragmentChattingDetail.this.edt_input_content.getText().toString();
+                    if (messageContent != "" && messageContent != null){
+
+                        long time = System.currentTimeMillis();
+                        String user_id = FragmentChattingDetail.this.userID;
+                        Message sentMessage = new Message(messageContent, time, user_id);
+                        currentMessages.push().setValue(sentMessage);
+                        FragmentChattingDetail.this.edt_input_content.setText("");
+                        currentConversationContent.child("lastMessage").setValue(messageContent);
+                        currentConversationContent.child("lastUpdatedTime").setValue(time);
+                    }
+                }
+            });
+        }
         return view;
     }
     @Override

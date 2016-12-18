@@ -5,27 +5,16 @@ package com.uitstu.party.models;
  */
 
 public class Message {
-    private String messageID;
     private String content;
     private long createdTime;
     private String user_id;
     public Message(){
 
     }
-    public Message(String messageID, String content, long createdTime, String user_id) {
-
-        this.messageID = messageID;
+    public Message(String content, long createdTime, String user_id) {
         this.content = content;
         this.createdTime = createdTime;
         this.user_id = user_id;
-    }
-
-    public String getMessageID() {
-        return messageID;
-    }
-
-    public void setMessageID(String messageID) {
-        this.messageID = messageID;
     }
 
     public String getContent() {
