@@ -22,6 +22,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.uitstu.party.R;
 import com.uitstu.party.models.Conversation;
+import com.uitstu.party.models.RecentGroupConversation;
 import com.uitstu.party.supports.ChatItem;
 
 import java.util.ArrayList;
@@ -34,10 +35,15 @@ import java.util.Set;
 
 public class FragmentChattingList extends Fragment {
     private LinearLayout linearLayout;
+    private LinearLayout main_chatitem_container;
     private FragmentChatting parentFragment;
 
+    private String currentGroupID;
+    private DatabaseReference currentgroupConversation;
     private DatabaseReference currentuserConversations;
     private Set<Conversation> currentConversations;         // set of data objects
+    private ValueEventListener currentValueEventGroupConversation;
+    private ValueEventListener currentValueEventUserConversations;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,26 +56,82 @@ public class FragmentChattingList extends Fragment {
 
         // get layout by id from root view
         linearLayout = (LinearLayout) view.findViewById(R.id.fragment_chatting_list_layout);
-
+        main_chatitem_container = (LinearLayout)view.findViewById(R.id.main_chatitem_container);
         // lấy dữ liệu về set
+        currentConversations = new HashSet<>();
         final String currentUserID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         if (currentUserID != null) {
             currentuserConversations = FirebaseDatabase.getInstance().getReference().child("conversationInUser")
                     .child(currentUserID)
                     .child("conversations");
-            currentConversations = new HashSet<>();
         }
+
         view.getViewTreeObserver().addOnGlobalLayoutListener(new android.view.ViewTreeObserver.OnGlobalLayoutListener(){
             private boolean gotLayoutWidth = false; // đã lấy được chiều rộng layout chưa?
             private Conversation c;
+            private RecentGroupConversation recentGroupConversation;
             // hoàn thành layout rồi và các view đều đã được biết hết
             @Override
             public void onGlobalLayout(){
                 if(gotLayoutWidth==false){
                     if(isNetworkAvailable()) {
+                        // load ra group conversation trước
+                        // lấy id của party hiện tại
+                        FirebaseDatabase.getInstance().getReference().child("users")
+                                .child(currentUserID)
+                                .child("curPartyID").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                currentGroupID = dataSnapshot.getValue().toString();
+                                if (currentGroupID != null) {
+                                    currentgroupConversation = FirebaseDatabase.getInstance().getReference().child("parties")
+                                            .child(currentGroupID)
+                                            .child("conversation");
+                                }
+                                main_chatitem_container.removeAllViews();
+                                currentValueEventGroupConversation = new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        // duyệt
+                                        if(dataSnapshot.hasChildren()){
+                                            Bitmap b = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+                                            ChatItem chatItem = new ChatItem(FragmentChattingList.this.getContext(),b,
+                                                    main_chatitem_container.getWidth());
+                                            chatItem.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    if(parentFragment!=null){
+                                                        // set conversation id trước khi thêm detail fragments
+                                                        parentFragment.setRecentGroupID(recentGroupConversation.getGroupID());
+                                                        parentFragment.addRecentGroupChatDetailFragment();
+                                                        parentFragment.switchToNextFragment();
+                                                    }
+                                                }
+                                            });
+                                            recentGroupConversation = new RecentGroupConversation(currentGroupID,chatItem);
+                                            main_chatitem_container.addView(chatItem);  // add to view
+                                        }
+                                    }
 
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                };
+                                currentgroupConversation.addValueEventListener(currentValueEventGroupConversation);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+
+
+                        // add những conversation cá nhân
                         if(currentuserConversations!=null){
-                            currentuserConversations.addValueEventListener(new ValueEventListener() {
+                            currentValueEventUserConversations = new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     currentConversations.clear();
@@ -85,11 +147,10 @@ public class FragmentChattingList extends Fragment {
                                         chatItem.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
-                                                ChatItem chat = (ChatItem) v;
                                                 if(parentFragment!=null){
                                                     // set conversation id trước khi thêm detail fragments
                                                     parentFragment.setRecentConversationId(c.getConversationID());
-                                                    parentFragment.addDetailFragment();
+                                                    parentFragment.addNormalChatDetailFragment();
                                                     parentFragment.switchToNextFragment();
                                                 }
                                             }
@@ -103,7 +164,8 @@ public class FragmentChattingList extends Fragment {
                                 public void onCancelled(DatabaseError databaseError) {
 
                                 }
-                            });
+                            };
+                            currentuserConversations.addValueEventListener(currentValueEventUserConversations);
                         }
                     }
                     gotLayoutWidth = true;
@@ -125,6 +187,17 @@ public class FragmentChattingList extends Fragment {
         // nếu 3 điều kiện != null, available, isconnected đều đúng
         return networkInfo!=null&&networkInfo.isAvailable()&&networkInfo.isConnected();
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(currentuserConversations!=null&&currentValueEventUserConversations!=null)
+            currentuserConversations.removeEventListener(currentValueEventUserConversations);
+        if(currentgroupConversation!=null&&currentValueEventGroupConversation!=null){
+            currentgroupConversation.removeEventListener(currentValueEventGroupConversation);
+        }
+    }
+
     public void setParentFragment(FragmentChatting fragment){
         parentFragment = fragment;
     }

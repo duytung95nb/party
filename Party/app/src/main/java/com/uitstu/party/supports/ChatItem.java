@@ -79,7 +79,8 @@ public class ChatItem extends LinearLayout{
     public void RefreshContent(String groupname, String lastmessage, String interationtime){
         groupName.setText(groupname);
         lastMessage.setText(lastmessage);
-        interactionTime.setText(interationtime);
+        interactionTime.setText(getTimeIntervalFromLastUpdate(
+                Long.parseLong(interationtime)));
     }
     // draw a bottom line
     @Override
@@ -88,5 +89,39 @@ public class ChatItem extends LinearLayout{
         p.setColor(Color.BLACK);
         p.setStrokeWidth(10);
         canvas.drawLine(0,this.getHeight(),this.getWidth(),this.getHeight(),p);
+    }
+    public String getTimeIntervalFromLastUpdate(long inputTime){
+        // tính khoảng cách ra bằng giây
+        long intervalInSecond = (System.currentTimeMillis() - inputTime)/1000;
+        // nhỏ hơn 1 phút thì xuất ra giây
+        if(intervalInSecond>0&&intervalInSecond<60){
+            if(intervalInSecond==1)
+                return intervalInSecond+" sec ago";
+            else
+                return intervalInSecond+" secs ago";
+        }
+        // lớn hơn 1 phút, nhỏ hơn 1 giờ
+        else if (intervalInSecond>60&&intervalInSecond<3600){
+            if((intervalInSecond/60)==1)
+                return (intervalInSecond/60)+" min ago";
+            else
+                return (intervalInSecond/60)+" mins ago";
+        }
+            // lớn hơn 1 giờ, nhỏ hơn 1 ngày
+        else if (intervalInSecond>3600&&intervalInSecond<86400){
+            if((intervalInSecond/3600)==1)
+                return (intervalInSecond/3600)+" hr ago";
+            else
+                return (intervalInSecond/3600)+" hrs ago";
+        }
+            // lớn hơn 1 ngày
+        else{
+            long dayAgo = intervalInSecond/86400;
+            if (dayAgo==1)
+                return (dayAgo)+" day ago";
+            else
+                return (dayAgo)+" days ago";
+        }
+
     }
 }

@@ -22,6 +22,7 @@ import com.uitstu.party.MainActivity;
 import com.uitstu.party.fragments.FragmentDrawer;
 import com.uitstu.party.fragments.FragmentMap;
 import com.uitstu.party.models.Anchor;
+import com.uitstu.party.models.GroupConversation;
 import com.uitstu.party.models.Tracking;
 import com.uitstu.party.models.User;
 import com.uitstu.party.presenter.interfaces.ILogin;
@@ -30,6 +31,7 @@ import com.uitstu.party.presenter.interfaces.IUpdateMap;
 import com.uitstu.party.supports.MemberAvatars;
 
 import java.io.IOException;
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -383,10 +385,20 @@ public class PartyFirebase {
 
                     final DatabaseReference push = firebaseDatabase.getReference("parties").push();
                     push.child("name").setValue(name, new DatabaseReference.CompletionListener() {
+                        // Tạo 1 conversation khi đã tạo xong group
                         @Override
                         public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                             if (databaseError == null){
                                 joinParty(push.getKey());
+                                // tạo chat group
+                                GroupConversation g = new GroupConversation();
+                                push.child("conversation").setValue(g, new DatabaseReference.CompletionListener(){
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        if(databaseError==null)
+                                            MainActivity.getInstant().showToast("Successfully created chat group!");
+                                    }
+                                });
                             }
                         }
                     });

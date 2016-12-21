@@ -9,6 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.uitstu.party.R;
 import com.uitstu.party.adapters.AdapterViewPager;
 import com.uitstu.party.models.Conversation;
@@ -25,17 +31,36 @@ public class FragmentChatting extends Fragment {
     private ArrayList<Fragment> fragmentList;
     private FragmentChattingList fragmentChattingList;
     private static String recentConversationId;
+    private static String recentGroupID;
+    private DatabaseReference userCurrentParty;                 // sẽ lắng nghe thay đổi party để load ra
+
     AdapterViewPager adapterViewPager;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_chatting, container, false);
+        final View view = inflater.inflate(R.layout.fragment_chatting, container, false);
+        userCurrentParty = FirebaseDatabase.getInstance().getReference()
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child("curPartyID");
+        // lắng nghe thay đổi ở current party id để load giao diện chat
+        userCurrentParty.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        initChildFragment(view);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
         return view;
     }
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState){
         super.onViewCreated(v,savedInstanceState);
-
+    }
+    public void initChildFragment(View v){
         // đưa danh sách fragment vào list
         fragmentList = new ArrayList<>();
         fragmentChattingList = new FragmentChattingList();
@@ -53,6 +78,9 @@ public class FragmentChatting extends Fragment {
     public void setRecentConversationId(String value){
         recentConversationId = value;
     }
+    public void setRecentGroupID(String value){
+        recentGroupID = value;
+    }
     public void switchToNextFragment(){
         int currentItemIndex = chatViewPager.getCurrentItem();
         int maxIndex = fragmentList.size()-1;
@@ -63,8 +91,19 @@ public class FragmentChatting extends Fragment {
         else
             chatViewPager.setCurrentItem(0,true);
     }
-    public void addDetailFragment(){
+    // nếu là normal chat fragment thì add hàm này
+    public void addNormalChatDetailFragment(){
         FragmentChattingDetail fragmentChattingDetail = new FragmentChattingDetail();
+        fragmentChattingDetail.setGroupChat(false);
+        fragmentChattingDetail.setParentFragment(this);
+        fragmentList.add(fragmentChattingDetail);
+        // set lại adapter
+        chatViewPager.setAdapter(adapterViewPager);
+    }
+    // nếu là group chat thì add cái này
+    public void addRecentGroupChatDetailFragment(){
+        FragmentChattingDetail fragmentChattingDetail = new FragmentChattingDetail();
+        fragmentChattingDetail.setGroupChat(true);
         fragmentChattingDetail.setParentFragment(this);
         fragmentList.add(fragmentChattingDetail);
         // set lại adapter
@@ -75,4 +114,5 @@ public class FragmentChatting extends Fragment {
         // set lại adapter
         chatViewPager.setAdapter(adapterViewPager);
     }
+
 }

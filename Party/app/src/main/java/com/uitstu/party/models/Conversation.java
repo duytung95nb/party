@@ -15,11 +15,9 @@ import java.util.ArrayList;
 
 public class Conversation {
     private String conversationID;
-    private ArrayList<String> displayNames;
     private String lastMessage;
     private String lastUpdatedTime;
     private String partyName;
-    private ArrayList<String> people;           // id người dùng
 
     private DatabaseReference conversation;
     // gắn vào 1 chat item
@@ -85,4 +83,5 @@ public class Conversation {
     public void setPartyName(String partyName) {
         this.partyName = partyName;
     }
+
 }
