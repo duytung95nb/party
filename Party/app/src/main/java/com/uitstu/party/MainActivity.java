@@ -40,6 +40,7 @@ import com.uitstu.party.fragments.FragmentDrawer;
 import com.uitstu.party.fragments.FragmentMap;
 import com.uitstu.party.models.User;
 import com.uitstu.party.presenter.PartyFirebase;
+import com.uitstu.party.services.GetGroupMessage;
 import com.uitstu.party.services.MyService;
 import com.uitstu.party.supports.MemberAvatars;
 
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
     DrawerLayout drawer;
 
+    private Intent intentGetGroupMessageService;
     public static boolean isOnline = false;
 
     private static MainActivity mainActivity;
@@ -123,6 +125,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // khi stop thì bật service
+    @Override
+    protected void onStop() {
+        Log.d("Activity stopped: ","Test !");
+        GetGroupMessage.setContext(this);
+        intentGetGroupMessageService = new Intent(this, GetGroupMessage.class);
+        startService(intentGetGroupMessageService);
+        super.onStop();
+    }
+    // khi stop thì bật service
+    @Override
+    protected void onRestart() {
+        Log.d("Activity restart: ","Test !");
+        if(intentGetGroupMessageService!=null)
+            stopService(intentGetGroupMessageService);
+        super.onRestart();
+    }
     public void updateMembers(){
         try {
             for (int i = 0; i < PartyFirebase.users.size(); i++) {

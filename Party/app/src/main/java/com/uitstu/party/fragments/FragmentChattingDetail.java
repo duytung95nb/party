@@ -30,6 +30,7 @@ import com.uitstu.party.R;
 import com.uitstu.party.models.Message;
 import com.uitstu.party.presenter.PartyFirebase;
 import com.uitstu.party.supports.ChatMessage;
+import com.uitstu.party.supports.MemberAvatars;
 
 import java.sql.Date;
 import java.util.Map;
@@ -107,15 +108,23 @@ public class FragmentChattingDetail extends Fragment {
                 // load lần đầu tiên
                 // thêm tin nhắn
                 currentmessageChildEventListener = new ChildEventListener() {
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
+                    Bitmap defaultBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         String mContent = dataSnapshot.child("content").getValue().toString();
                         long mCreatedTime = Long.parseLong(dataSnapshot.child("createdTime").getValue().toString());
                         String mUserID = dataSnapshot.child("user_id").getValue().toString();
+                        Bitmap bitmap = MemberAvatars.getInstant().getBitmap(mUserID);
                         Message m = new Message(mContent,mCreatedTime,mUserID);
-                        ChatMessage chatMessage = new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
-                                bitmap,m);
+                        ChatMessage chatMessage;
+                        if(bitmap!=null){
+                            chatMessage= new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
+                                    bitmap,m);
+                        }
+                        else{
+                            chatMessage= new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
+                                    defaultBitmap,m);
+                        }
                         chatContentLayoutContainer.addView(chatMessage);
                         // lăn thanh cuộn xuống dưới cùng
                         chatContentScrollView.post(new Runnable() {
@@ -174,15 +183,24 @@ public class FragmentChattingDetail extends Fragment {
                 // load lần đầu tiên
                 // thêm tin nhắn
                 currentmessageChildEventListener = new ChildEventListener() {
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
+                    Bitmap defaultBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         String mContent = dataSnapshot.child("content").getValue().toString();
                         long mCreatedTime = Long.parseLong(dataSnapshot.child("createdTime").getValue().toString());
                         String mUserID = dataSnapshot.child("user_id").getValue().toString();
+                        Bitmap bitmap = MemberAvatars.getInstant().getBitmap(mUserID);
                         Message m = new Message(mContent,mCreatedTime,mUserID);
-                        ChatMessage chatMessage = new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
-                                bitmap,m);
+                        ChatMessage chatMessage;
+                        if(bitmap!=null){
+                            chatMessage= new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
+                                    bitmap,m);
+                        }
+                        else{
+                            chatMessage = new ChatMessage(FragmentChattingDetail.this.getActivity().getApplicationContext(),
+                                    defaultBitmap,m);
+                        }
+
                         chatContentLayoutContainer.addView(chatMessage);
                         // lăn thanh cuộn xuống dưới cùng
                         chatContentScrollView.post(new Runnable() {
