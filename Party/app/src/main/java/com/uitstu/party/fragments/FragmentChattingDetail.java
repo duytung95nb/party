@@ -103,8 +103,9 @@ public class FragmentChattingDetail extends Fragment {
                         .child("parties")
                         .child(PartyFirebase.user.curPartyID)
                         .child("conversation");
+                currentConversationContent.keepSynced(true);
                 currentMessages = currentConversationContent.child("messages");
-
+                currentMessages.keepSynced(true);
                 // load lần đầu tiên
                 // thêm tin nhắn
                 currentmessageChildEventListener = new ChildEventListener() {
@@ -155,7 +156,7 @@ public class FragmentChattingDetail extends Fragment {
 
                     }
                 };
-                currentMessages.orderByChild("createdTime").limitToLast(15)
+                currentMessages.orderByChild("createdTime").limitToLast(10)
                         .addChildEventListener(currentmessageChildEventListener);
                 // gửi tin nhắn
                 btn_send.setOnClickListener(new View.OnClickListener(){
@@ -179,7 +180,9 @@ public class FragmentChattingDetail extends Fragment {
                 currentConversationContent = FirebaseDatabase.getInstance().getReference()
                         .child("conversations")
                         .child(parentFragment.getRecentConversationId());
+                currentConversationContent.keepSynced(true);
                 currentMessages = currentConversationContent.child("messages");
+                currentMessages.keepSynced(true);
                 // load lần đầu tiên
                 // thêm tin nhắn
                 currentmessageChildEventListener = new ChildEventListener() {
@@ -257,8 +260,6 @@ public class FragmentChattingDetail extends Fragment {
     @Override
     public void onViewCreated(View v, Bundle savedInstanceState){
         super.onViewCreated(v,savedInstanceState);
-
-
     }
 
     @Override

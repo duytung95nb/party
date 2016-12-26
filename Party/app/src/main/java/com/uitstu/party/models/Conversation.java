@@ -28,6 +28,7 @@ public class Conversation {
         conversation = FirebaseDatabase.getInstance().getReference()
                 .child("conversations")         // lấy danh sách conversations từ node conversation tổng
                 .child(this.conversationID);    // lấy ra conversation cụ thể
+        conversation.keepSynced(true);
         this.partyName = conversation.child("partyName").getKey().toString();
         this.lastMessage = conversation.child("lastMessage").getKey().toString();
         this.lastUpdatedTime = conversation.child("lastUpdatedTime").getKey().toString();

@@ -125,14 +125,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("Activity started: ","Test !");
+        if(intentGetGroupMessageService!=null)
+            stopService(intentGetGroupMessageService);
+    }
+
     // khi stop thì bật service
     @Override
     protected void onStop() {
-        Log.d("Activity stopped: ","Test !");
-        GetGroupMessage.setContext(this);
-        intentGetGroupMessageService = new Intent(this, GetGroupMessage.class);
-        startService(intentGetGroupMessageService);
         super.onStop();
+        Log.d("Activity stopped: ","Test !");
+        // nếu user hiện tại đã đăng nhập thì tạo service
+        if(PartyFirebase.user.UID!=null&&PartyFirebase.user.UID!=""){
+            Log.d("Activity stopped: ","Test !");
+            GetGroupMessage.setContext(this);
+            intentGetGroupMessageService = new Intent(this, GetGroupMessage.class);
+            startService(intentGetGroupMessageService);
+        }
     }
     // khi stop thì bật service
     @Override

@@ -1,5 +1,6 @@
 package com.uitstu.party.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,6 +19,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.uitstu.party.R;
 import com.uitstu.party.adapters.AdapterViewPager;
 import com.uitstu.party.models.Conversation;
+import com.uitstu.party.services.GetGroupMessage;
 import com.uitstu.party.supports.StaticViewPager;
 
 import java.util.ArrayList;
@@ -35,9 +37,12 @@ public class FragmentChatting extends Fragment {
     private DatabaseReference userCurrentParty;                 // sẽ lắng nghe thay đổi party để load ra
 
     AdapterViewPager adapterViewPager;
+    Intent intentGetGroupMessageService;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        if(intentGetGroupMessageService!=null)
+            this.getActivity().stopService(intentGetGroupMessageService);
         final View view = inflater.inflate(R.layout.fragment_chatting, container, false);
         userCurrentParty = FirebaseDatabase.getInstance().getReference()
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -60,6 +65,12 @@ public class FragmentChatting extends Fragment {
     public void onViewCreated(View v, Bundle savedInstanceState){
         super.onViewCreated(v,savedInstanceState);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+    // update lại mỗi lần load
     public void initChildFragment(View v){
         // đưa danh sách fragment vào list
         fragmentList = new ArrayList<>();

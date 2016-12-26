@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -20,6 +21,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.uitstu.party.MainActivity;
+import com.uitstu.party.models.GroupConversation;
 import com.uitstu.party.models.User;
 import com.uitstu.party.presenter.PartyFirebase;
 
@@ -40,6 +42,13 @@ public class GetGroupMessage extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+    }
+    // bắt đầu lệnh
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(this.getClass().getName()+"Command start: ","started");
+        createNotification(GetGroupMessage.mContext,"demo","demo","demo");
         currentGroupChat = FirebaseDatabase.getInstance().getReference()
                 .child(PartyFirebase.user.curPartyID)
                 .child("messages");
@@ -49,18 +58,18 @@ public class GetGroupMessage extends Service {
                 String mContent = dataSnapshot.child("content").getValue().toString();
 
                 long mCreatedTime = Long.parseLong(dataSnapshot.child("createdTime").getValue().toString());
-                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM hh:mm:ss");
-                String dateString = formatter.format(new Date(mCreatedTime));
+                /*SimpleDateFormat formatter = new SimpleDateFormat("dd/MM hh:mm:ss");
+                String dateString = formatter.format(new Date(mCreatedTime));*/
 
                 String mUserID = dataSnapshot.child("user_id").getValue().toString();
                 String userName = "";
                 // lấy user name từ user id
                 for (User u:PartyFirebase.users) {
-                    if(u.UID.equals("mUserID"))
+                    if(u.UID.equals(mUserID))
                         userName=u.name;
                 }
 
-                createNotification(userName,mContent,dateString);
+                GetGroupMessage.this.createNotification(GetGroupMessage.mContext, userName,mContent,mCreatedTime+"");
             }
 
             @Override
@@ -83,19 +92,17 @@ public class GetGroupMessage extends Service {
 
             }
         };
-    }
-    // bắt đầu lệnh
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
         if(currentGroupChatListener!=null&& currentGroupChat!=null){
-            currentGroupChat.addChildEventListener(currentGroupChatListener);
+            Log.d(this.getClass().getName()+"Even listener: ","added");
+            currentGroupChat.limitToLast(1).addChildEventListener(currentGroupChatListener);
         }
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
         if(currentGroupChatListener!=null&& currentGroupChat!=null){
+            Log.d(this.getClass().getName()+"Even listener: ","removed");
             currentGroupChat.removeEventListener(currentGroupChatListener);
         }
         super.onDestroy();
@@ -103,7 +110,7 @@ public class GetGroupMessage extends Service {
 
     @Override
     public void onLowMemory() {
-        createNotification("Low memory", "Your phone's memory is low", "Check phone's memory");
+        createNotification(GetGroupMessage.mContext,"Low memory", "Your phone's memory is low", "Check phone's memory");
         super.onLowMemory();
     }
 
@@ -112,7 +119,7 @@ public class GetGroupMessage extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-    private void createNotification(String title, String text, String info){
+    public void createNotification(Context mContext, String title, String text, String info){
         // now is notification
         Intent intent = new Intent(mContext, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

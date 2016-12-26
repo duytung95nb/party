@@ -252,6 +252,7 @@ public class PartyFirebase {
                 public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                     if (firebaseAuth.getCurrentUser() != null) {
                         userInfo = firebaseDatabase.getReference("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        userInfo.keepSynced(true);
                         userInfo.addValueEventListener(eventUserInfo);
                     }
                 }

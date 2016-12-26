@@ -1,13 +1,21 @@
 package com.uitstu.party.fragments;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +28,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.uitstu.party.MainActivity;
 import com.uitstu.party.R;
 import com.uitstu.party.models.Conversation;
 import com.uitstu.party.models.RecentGroupConversation;
@@ -48,7 +57,6 @@ public class FragmentChattingList extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-    // chạy asynctask trong sự kiện hoàn thành hết giao diện
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,16 +92,19 @@ public class FragmentChattingList extends Fragment {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 currentGroupID = dataSnapshot.getValue().toString();
                                 if (currentGroupID != null) {
-                                    currentgroupConversation = FirebaseDatabase.getInstance().getReference().child("parties")
+                                    currentgroupConversation = FirebaseDatabase.getInstance().getReference()
+                                            .child("parties")
                                             .child(currentGroupID)
                                             .child("conversation");
+                                    currentgroupConversation.keepSynced(true);
                                 }
-                                main_chatitem_container.removeAllViews();
+
                                 currentValueEventGroupConversation = new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         // duyệt
                                         if(dataSnapshot.hasChildren()){
+                                            main_chatitem_container.removeAllViews();
                                             Bitmap b = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
                                             ChatItem chatItem = new ChatItem(FragmentChattingList.this.getContext(),b,
                                                     main_chatitem_container.getWidth());
@@ -180,6 +191,27 @@ public class FragmentChattingList extends Fragment {
         super.onViewCreated(view,savedInstanceState);
     }
 
+    @Override
+    public void onPause() {
+        if(currentValueEventUserConversations != null)
+            Log.d(this.getClass().getName()+" Listener still alive"," listening");
+        Log.d(this.getClass().getName()," paused");
+        removeEventListener();
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(this.getClass().getName()," destroyed");
+        removeEventListener();
+        if(currentValueEventUserConversations != null)
+            Log.d(this.getClass().getName()+" Listener still alive"," listening");
+    }
+
+    public void setParentFragment(FragmentChatting fragment){
+        parentFragment = fragment;
+    }
     private boolean isNetworkAvailable(){
         ConnectivityManager connectivityManager =
                 (ConnectivityManager)this.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -187,10 +219,8 @@ public class FragmentChattingList extends Fragment {
         // nếu 3 điều kiện != null, available, isconnected đều đúng
         return networkInfo!=null&&networkInfo.isAvailable()&&networkInfo.isConnected();
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+    // Xóa event của fragment này
+    private void removeEventListener(){
         if(currentuserConversations!=null&&currentValueEventUserConversations!=null)
             currentuserConversations.removeEventListener(currentValueEventUserConversations);
         if(currentgroupConversation!=null&&currentValueEventGroupConversation!=null){
@@ -198,7 +228,4 @@ public class FragmentChattingList extends Fragment {
         }
     }
 
-    public void setParentFragment(FragmentChatting fragment){
-        parentFragment = fragment;
-    }
 }
