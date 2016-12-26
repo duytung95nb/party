@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         return mainActivity;
     }
 
+    public static boolean isRunning;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
         isOnline = true;
 
+        isRunning = true;
         MemberAvatars.getInstant(getBaseContext());
 
         //MemberAvatars.getInstant(this);
@@ -124,35 +126,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    // resume -> Running -> Pause -> Resume
     @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d("Activity started: ","Test !");
-        if(intentGetGroupMessageService!=null)
-            stopService(intentGetGroupMessageService);
-    }
-
-    // khi stop thì bật service
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d("Activity stopped: ","Test !");
-        // nếu user hiện tại đã đăng nhập thì tạo service
-        if(PartyFirebase.user.UID!=null&&PartyFirebase.user.UID!=""){
-            Log.d("Activity stopped: ","Test !");
-            GetGroupMessage.setContext(this);
-            intentGetGroupMessageService = new Intent(this, GetGroupMessage.class);
-            startService(intentGetGroupMessageService);
+    protected void onResume(){
+        Log.d("Activity paused: ","true!");
+        isRunning = true;
+        super.onResume();
+        // navigate to chat screen
+        String navigateMessage = getIntent().getStringExtra("NavigateMessage");
+        // nếu message là navigate to chat detail thì navigate tới screen chat list
+        if(navigateMessage!=null){
+            if(navigateMessage.equals("NavigateToChatDetail"))
+                this.viewPager.setCurrentItem(1);
         }
+
     }
+
     // khi stop thì bật service
     @Override
-    protected void onRestart() {
-        Log.d("Activity restart: ","Test !");
-        if(intentGetGroupMessageService!=null)
-            stopService(intentGetGroupMessageService);
-        super.onRestart();
+    protected void onPause() {
+        Log.d("Activity paused: ","true!");
+        isRunning = false;
+        super.onPause();
+
     }
     public void updateMembers(){
         try {

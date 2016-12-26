@@ -53,7 +53,11 @@ public class RecentGroupConversation {
                 RecentGroupConversation.this.setLastMessage(lastmessage);
                 RecentGroupConversation.this.setLastUpdatedTime(lastupdatedtime);
                 chatItem.RefreshContent(partyname, lastmessage, lastupdatedtime);
-                //createNotification(chatItem.getContext(),partyname,lastmessage,lastupdatedtime);
+                // nếu main activity đang không chạy thì hiện notification
+                if (MainActivity.isRunning==false){
+                    createNotification(chatItem.getContext(),partyname,lastmessage,lastupdatedtime);
+                }
+
             }
 
             @Override
@@ -100,6 +104,7 @@ public class RecentGroupConversation {
         // now is notification
         Intent intent = new Intent(context,
                 MainActivity.class);
+        intent.putExtra("NavigateMessage","NavigateToChatDetail");
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(context);

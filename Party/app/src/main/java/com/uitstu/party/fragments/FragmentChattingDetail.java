@@ -53,14 +53,17 @@ public class FragmentChattingDetail extends Fragment {
     private DatabaseReference currentMessages;           // chứa nội dung các message
     private ChildEventListener currentmessageChildEventListener;    // bộ lắng nghe sự kiện child
     private boolean isGroupChat;
+    private int currentMessagesAmount;                               // số message được load
     private final String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chatting_detail, container, false);
+        currentMessagesAmount = 10;
         // cố định cho cả normal chat và group chat
         fragment_chatting_detail_layout = (RelativeLayout) view.findViewById(R.id.fragment_chatting_detail_layout);
         chatContentScrollView = (ScrollView) view.findViewById(R.id.chatContentScrollView);
+
         chatContentLayoutContainer = (LinearLayout) view.findViewById(R.id.chatContentLayoutContainer);
         chatToolsBar = (LinearLayout)view.findViewById(R.id.chatToolsBar);
         edt_input_content = (EditText) view.findViewById(R.id.edt_input_content);
@@ -103,15 +106,13 @@ public class FragmentChattingDetail extends Fragment {
                         .child("parties")
                         .child(PartyFirebase.user.curPartyID)
                         .child("conversation");
-                currentConversationContent.keepSynced(true);
                 currentMessages = currentConversationContent.child("messages");
-                currentMessages.keepSynced(true);
-                // load lần đầu tiên
                 // thêm tin nhắn
                 currentmessageChildEventListener = new ChildEventListener() {
                     Bitmap defaultBitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
                         String mContent = dataSnapshot.child("content").getValue().toString();
                         long mCreatedTime = Long.parseLong(dataSnapshot.child("createdTime").getValue().toString());
                         String mUserID = dataSnapshot.child("user_id").getValue().toString();
@@ -156,7 +157,7 @@ public class FragmentChattingDetail extends Fragment {
 
                     }
                 };
-                currentMessages.orderByChild("createdTime").limitToLast(10)
+                currentMessages.orderByChild("createdTime").limitToLast(currentMessagesAmount)
                         .addChildEventListener(currentmessageChildEventListener);
                 // gửi tin nhắn
                 btn_send.setOnClickListener(new View.OnClickListener(){
@@ -270,7 +271,7 @@ public class FragmentChattingDetail extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // xóa event listener của child đi, tránh lỗi phải lắng nghe quá nhiều khiến máy bị đứng
+        // xóa event listener của child đi
         if (currentMessages!=null&& currentmessageChildEventListener!=null)
             currentMessages.removeEventListener(currentmessageChildEventListener);
     }
