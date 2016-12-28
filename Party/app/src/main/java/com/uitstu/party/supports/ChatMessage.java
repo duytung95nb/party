@@ -21,7 +21,7 @@ public class ChatMessage extends LinearLayout {
     private RoundedImageView userAvatar;
     private FrameLayout chatContentContainer;
     private TextView chatContent;
-    private Message message;
+    public Message message;
 
     public ChatMessage(Context context) {
         super(context);

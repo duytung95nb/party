@@ -23,23 +23,45 @@
             android:id="@+id/chatContentLayoutContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="bottom"
-            android:gravity="bottom">
+            android:orientation="vertical">
 
         </LinearLayout>
     </ScrollView>
+    <com.getbase.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/chatToolsBar"
+        android:layout_alignParentLeft="true"
+        app:fab_icon="@drawable/icon_back"
+        android:visibility="gone"/>
+    <com.getbase.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_group_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/btn_back"
+        android:layout_above="@+id/chatToolsBar"
+        app:fab_icon="@drawable/icon_group"
+        android:visibility="gone"/>
     <LinearLayout
         android:id="@+id/chatToolsBar"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true">
+        <ImageButton
+            android:id="@+id/btn_menu_show"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:layout_margin="@dimen/fab_labels_margin"
+            android:src="@drawable/icon_menu"/>
         <EditText
             android:id="@+id/edt_input_content"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="5"/>
+            android:layout_weight="4"/>
         <Button
             android:id="@+id/btn_send"
             android:layout_width="0dp"
@@ -47,15 +69,7 @@
             android:layout_weight="1"
             android:text="Send"/>
     </LinearLayout>
-    <com.getbase.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#CCFF0000"
-        android:layout_alignParentRight="true"
-        android:layout_above="@+id/chatToolsBar"
-        android:layout_margin="@dimen/fab_labels_margin"
-        app:fab_icon="@drawable/icon_out"/>
+
 
 
 </RelativeLayout>
